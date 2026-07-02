@@ -1,0 +1,47 @@
+name: iOS Build
+
+on:
+  push:
+    branches: [ios-build]
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    name: Build iOS (unsigned)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create .env
+        run: |
+          echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+          echo "GEMINI_MODEL=${{ secrets.GEMINI_MODEL }}" >> .env
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate code (Isar)
+        run: dart run build_runner build
+
+      - name: Build iOS (no code signing)
+        run: flutter build ios --release --no-codesign
+
+      - name: Package app
+        run: |
+          cd build/ios/iphoneos
+          zip -r Runner.app.zip Runner.app
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-unsigned
+          path: build/ios/iphoneos/Runner.app.zip
+          if-no-files-found: error

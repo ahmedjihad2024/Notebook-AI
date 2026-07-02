@@ -85,7 +85,7 @@ class _SplashViewState extends State<SplashView>
                 ),
                 SizedBox(height: 20.h),
                 Text(
-                  'AI Notes',
+                  'Notebook AI',
                   style: context.headlineMedium.copyWith(
                     fontWeight: FontWeightM.bold,
                     color: ColorM.foreground,

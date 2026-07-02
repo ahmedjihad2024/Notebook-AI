@@ -6,38 +6,20 @@ import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/core/res/sizes_manager.dart';
+import 'package:notebook_ai/features/notes/data/providers/folders_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
-import 'package:notebook_ai/features/notes/data/providers/notes_provider.dart';
 import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 
-/// Folders view matching the Figma design.
-///
-/// Shows "Smart Folders / Organize" header, an "All Notes" hero card,
-/// and a 2-column grid of category folders with counts.
 class FoldersView extends ConsumerWidget {
   const FoldersView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final notes = ref.watch(notesProvider);
     final nav = ref.read(notesNavProvider.notifier);
-
-    // Count notes per folder — a note belongs to every folder whose name
-    // matches one of its tags, so multi-tag notes appear in multiple folders.
-    final counts = <String, int>{};
-    for (final folder in kFolders) {
-      counts[folder] =
-          notes.where((n) => n.tags.any((t) => t.label == folder)).length;
-    }
-    // "Others" collects notes that have no tags at all.
-    final othersCount = notes.where((n) => n.tags.isEmpty).length;
-
-    // Grid folders: "Others" pinned to the top, then the tag folders.
-    final gridFolders = [kOthersFolder, ...kFolders];
+    final state = ref.watch(foldersProvider);
 
     return Column(
       children: [
-        // ── Header ──
         Padding(
           padding: EdgeInsets.only(
             left: 20.w,
@@ -68,17 +50,10 @@ class FoldersView extends ConsumerWidget {
             ],
           ),
         ),
-
-        // ── Content ──
         Expanded(
           child: ListView(
-            padding: EdgeInsets.only(
-              left: 20.w,
-              right: 20.w,
-              bottom: 120.h,
-            ),
+            padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 120.h),
             children: [
-              // ── All Notes Hero Card ──
               GestureDetector(
                 onTap: () => nav.openFolder('__all__'),
                 child: Container(
@@ -106,7 +81,7 @@ class FoldersView extends ConsumerWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            '${notes.length}',
+                            '${state.total}',
                             style: context.headlineSmall.copyWith(
                               fontWeight: FontWeightM.bold,
                               color: ColorM.onPrimary,
@@ -122,9 +97,7 @@ class FoldersView extends ConsumerWidget {
                     ],
                   ),
                 ),
-              ).premiumAppear(index: 0),
-
-              // ── By Category Label ──
+              ),
               Text(
                 'BY CATEGORY',
                 style: TextStyle(
@@ -136,8 +109,6 @@ class FoldersView extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: 12.h),
-
-              // ── Folder Grid ──
               GridView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -154,8 +125,7 @@ class FoldersView extends ConsumerWidget {
                   final color = isOthers
                       ? ColorM.mutedForeground
                       : (ColorM.tagColors[folder] ?? ColorM.primaryAccent);
-                  final count =
-                      isOthers ? othersCount : (counts[folder] ?? 0);
+                  final count = state.countOf(folder);
 
                   return GestureDetector(
                     onTap: () => nav.openFolder(folder),
@@ -163,15 +133,13 @@ class FoldersView extends ConsumerWidget {
                       padding: EdgeInsets.all(16.w),
                       decoration: BoxDecoration(
                         color: ColorM.cardBackground,
-                        borderRadius: BorderRadius.circular(
-                            SizeM.cardBorderRadius.r),
-                        border:
-                            Border.all(color: ColorM.border, width: 1),
+                        borderRadius:
+                            BorderRadius.circular(SizeM.cardBorderRadius.r),
+                        border: Border.all(color: ColorM.border, width: 1),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Folder icon
                           Container(
                             width: 40.w,
                             height: 40.w,
@@ -187,10 +155,7 @@ class FoldersView extends ConsumerWidget {
                               color: color,
                             ),
                           ),
-
                           SizedBox(height: 12.h),
-
-                          // Name
                           Text(
                             folder,
                             style: context.bodyMedium.copyWith(
@@ -198,10 +163,7 @@ class FoldersView extends ConsumerWidget {
                               color: ColorM.foreground,
                             ),
                           ),
-
                           SizedBox(height: 2.h),
-
-                          // Count
                           Text(
                             '$count note${count != 1 ? 's' : ''}',
                             style: TextStyle(
@@ -213,7 +175,7 @@ class FoldersView extends ConsumerWidget {
                         ],
                       ),
                     ),
-                  ).premiumAppear(index: index + 1, baseDelay: 50);
+                  );
                 },
               ),
             ],

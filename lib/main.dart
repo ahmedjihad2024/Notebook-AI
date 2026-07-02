@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook_ai/core/app.dart';
@@ -22,6 +23,9 @@ void main() {
 Future<void> _initApp() async {
   // Framework + plugins
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await dotenv.load(fileName: '.env');
+  } catch (_) {}
   await EasyLocalization.ensureInitialized();
   await DI.init();
 

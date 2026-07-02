@@ -2,34 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
+import 'package:notebook_ai/core/ui_kit/customized_smart_refresh.dart';
+import 'package:notebook_ai/features/notes/data/providers/home_feed_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
-import 'package:notebook_ai/features/notes/data/providers/notes_provider.dart';
 import 'package:notebook_ai/features/notes/view/widgets/note_card.dart';
 
-/// Notes list view matching the Figma design.
-///
-/// Shows "AI Notes / My Notes" header, note/starred counts,
-/// starred section, and recent section.
-class NotesListView extends ConsumerWidget {
+class NotesListView extends ConsumerStatefulWidget {
   const NotesListView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final notes = ref.watch(notesProvider);
-    final nav = ref.read(notesNavProvider.notifier);
+  ConsumerState<NotesListView> createState() => _NotesListViewState();
+}
 
-    final starred = notes.where((n) => n.starred).toList();
-    final recent = notes
-        .where((n) => !n.starred)
-        .toList()
-      ..sort((a, b) => b.createdAt.compareTo(a.createdAt));
+class _NotesListViewState extends ConsumerState<NotesListView> {
+  final _refreshController = RefreshController();
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(homeFeedProvider.notifier).refresh();
+    _refreshController.refreshCompleted();
+    _refreshController.resetNoData();
+  }
+
+  Future<void> _onLoading() async {
+    await ref.read(homeFeedProvider.notifier).loadMore();
+    ref.read(homeFeedProvider).hasMore
+        ? _refreshController.loadComplete()
+        : _refreshController.loadNoData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nav = ref.read(notesNavProvider.notifier);
+    final state = ref.watch(homeFeedProvider);
 
     return Column(
       children: [
-        // ── Header ──
         Padding(
           padding: EdgeInsets.only(
             left: 20.w,
@@ -66,7 +83,6 @@ class NotesListView extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  // Add button
                   GestureDetector(
                     onTap: () => nav.openNewNote(),
                     child: Container(
@@ -87,7 +103,7 @@ class NotesListView extends ConsumerWidget {
               ),
               SizedBox(height: 4.h),
               Text(
-                '${notes.length} notes · ${starred.length} starred',
+                '${state.total} notes · ${state.starred.length} starred',
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontsM.dmSans.name,
@@ -97,71 +113,78 @@ class NotesListView extends ConsumerWidget {
             ],
           ),
         ),
-
-        // ── Content ──
         Expanded(
-          child: ListView(
-            padding: EdgeInsets.only(
-              left: 20.w,
-              right: 20.w,
-              bottom: 120.h,
-            ),
-            children: [
-              // ── Starred Section ──
-              if (starred.isNotEmpty) ...[
-                _SectionHeader(
-                  icon: LucideIcons.star,
-                  iconColor: ColorM.starYellow,
-                  label: 'STARRED',
-                ),
-                SizedBox(height: 12.h),
-                ...starred.map(
-                  (note) => Padding(
-                    padding: EdgeInsets.only(bottom: 12.h),
-                    child: NoteCard(
-                      note: note,
-                      onTap: () => nav.openNote(note),
-                      onStar: () =>
-                          ref.read(notesProvider.notifier).toggleStar(note.id),
-                    ).premiumAppear(
-                      index: starred.indexOf(note),
-                      baseDelay: 50,
+          child: state.loading
+              ? Center(
+                  child: SizedBox(
+                    width: 22.w,
+                    height: 22.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation(ColorM.primaryAccent),
                     ),
                   ),
-                ),
-                SizedBox(height: 20.h),
-              ],
-
-              // ── Recent Section ──
-              _SectionHeader(
-                icon: LucideIcons.clock,
-                iconColor: ColorM.mutedForeground,
-                label: 'RECENT',
-              ),
-              SizedBox(height: 12.h),
-              ...recent.map(
-                (note) => Padding(
-                  padding: EdgeInsets.only(bottom: 12.h),
-                  child: NoteCard(
-                    note: note,
-                    onTap: () => nav.openNote(note),
-                    onStar: () =>
-                        ref.read(notesProvider.notifier).toggleStar(note.id),
-                  ).premiumAppear(
-                    index: recent.indexOf(note) + starred.length,
-                    baseDelay: 50,
+                )
+              : CustomizedSmartRefresh(
+                  controller: _refreshController,
+                  enableRefresh: true,
+                  enableLoading: true,
+                  onRefresh: _onRefresh,
+                  onLoading: _onLoading,
+                  child: ListView(
+                    padding: EdgeInsets.only(
+                      left: 20.w,
+                      right: 20.w,
+                      bottom: 120.h,
+                    ),
+                    children: [
+                      if (state.starred.isNotEmpty) ...[
+                        _SectionHeader(
+                          icon: LucideIcons.star,
+                          iconColor: ColorM.starYellow,
+                          label: 'STARRED',
+                        ),
+                        SizedBox(height: 12.h),
+                        ...state.starred.map(
+                          (note) => Padding(
+                            padding: EdgeInsets.only(bottom: 12.h),
+                            child: NoteCard(
+                              note: note,
+                              onTap: () => nav.openNote(note),
+                              onStar: () => ref
+                                  .read(homeFeedProvider.notifier)
+                                  .toggleStar(note.id),
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20.h),
+                      ],
+                      _SectionHeader(
+                        icon: LucideIcons.clock,
+                        iconColor: ColorM.mutedForeground,
+                        label: 'RECENT',
+                      ),
+                      SizedBox(height: 12.h),
+                      ...state.recent.map(
+                        (note) => Padding(
+                          padding: EdgeInsets.only(bottom: 12.h),
+                          child: NoteCard(
+                            note: note,
+                            onTap: () => nav.openNote(note),
+                            onStar: () => ref
+                                .read(homeFeedProvider.notifier)
+                                .toggleStar(note.id),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            ],
-          ),
         ),
       ],
     );
   }
 }
-
-// ─── Section Header ───────────────────────────────────────────────────────────
 
 class _SectionHeader extends StatelessWidget {
   final IconData icon;

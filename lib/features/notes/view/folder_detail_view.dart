@@ -2,37 +2,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
+import 'package:notebook_ai/core/ui_kit/customized_smart_refresh.dart';
+import 'package:notebook_ai/features/notes/data/providers/folder_notes_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
-import 'package:notebook_ai/features/notes/data/providers/notes_provider.dart';
-import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 import 'package:notebook_ai/features/notes/view/widgets/note_card.dart';
 
-/// Folder detail view matching the Figma design.
-///
-/// Shows filtered notes for a specific folder, or all notes when
-/// folder is '__all__'. Includes back button and empty state.
-class FolderDetailView extends ConsumerWidget {
+class FolderDetailView extends ConsumerStatefulWidget {
   const FolderDetailView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final navState = ref.watch(notesNavProvider);
-    final notes = ref.watch(notesProvider);
-    final nav = ref.read(notesNavProvider.notifier);
-    final folder = navState.activeFolder;
+  ConsumerState<FolderDetailView> createState() => _FolderDetailViewState();
+}
 
-    final filtered = folder == '__all__'
-        ? notes
-        : folder == kOthersFolder
-            ? notes.where((n) => n.tags.isEmpty).toList()
-            : notes.where((n) => n.tags.any((t) => t.label == folder)).toList();
+class _FolderDetailViewState extends ConsumerState<FolderDetailView> {
+  final _refreshController = RefreshController();
+
+  @override
+  void dispose() {
+    _refreshController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(folderNotesProvider.notifier).refresh();
+    _refreshController.refreshCompleted();
+    _refreshController.resetNoData();
+  }
+
+  Future<void> _onLoading() async {
+    await ref.read(folderNotesProvider.notifier).loadMore();
+    ref.read(folderNotesProvider).hasMore
+        ? _refreshController.loadComplete()
+        : _refreshController.loadNoData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final nav = ref.read(notesNavProvider.notifier);
+    final folder = ref.watch(notesNavProvider).activeFolder;
+    final state = ref.watch(folderNotesProvider);
 
     return Column(
       children: [
-        // ── Header ──
         Row(
           children: [
             Expanded(
@@ -40,7 +55,7 @@ class FolderDetailView extends ConsumerWidget {
                 padding: EdgeInsets.only(
                   left: 20.w,
                   right: 20.w,
-                  top: context.topSafeAreaPadding + 12.h,
+                  top: MediaQuery.of(context).padding.top + 12.h,
                   bottom: 16.h,
                 ),
                 decoration: BoxDecoration(
@@ -51,7 +66,6 @@ class FolderDetailView extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Back button
                     GestureDetector(
                       onTap: () => nav.goToFolders(),
                       child: Row(
@@ -74,10 +88,7 @@ class FolderDetailView extends ConsumerWidget {
                         ],
                       ),
                     ),
-              
                     SizedBox(height: 12.h),
-              
-                    // Folder name
                     Text(
                       folder == '__all__' ? 'All Notes' : folder,
                       style: context.titleLarge.copyWith(
@@ -87,7 +98,7 @@ class FolderDetailView extends ConsumerWidget {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      '${filtered.length} notes',
+                      '${state.total} notes',
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontFamily: FontsM.dmSans.name,
@@ -100,42 +111,58 @@ class FolderDetailView extends ConsumerWidget {
             ),
           ],
         ),
-
-        // ── Content ──
         Expanded(
-          child: filtered.isEmpty
-              ? _EmptyState()
-              : ListView.builder(
-                  padding: EdgeInsets.only(
-                    left: 20.w,
-                    right: 20.w,
-                    top: 16.h,
-                    bottom: 120.h,
+          child: state.loading
+              ? Center(
+                  child: SizedBox(
+                    width: 22.w,
+                    height: 22.w,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2.2,
+                      valueColor: AlwaysStoppedAnimation(ColorM.primaryAccent),
+                    ),
                   ),
-                  itemCount: filtered.length,
-                  itemBuilder: (context, index) {
-                    final note = filtered[index];
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: NoteCard(
-                        note: note,
-                        onTap: () => nav.openNote(note),
-                        onStar: () => ref
-                            .read(notesProvider.notifier)
-                            .toggleStar(note.id),
-                      ).premiumAppear(index: index, baseDelay: 50),
-                    );
-                  },
-                ),
+                )
+              : state.items.isEmpty
+                  ? const _EmptyState()
+                  : CustomizedSmartRefresh(
+                      controller: _refreshController,
+                      enableRefresh: true,
+                      enableLoading: true,
+                      onRefresh: _onRefresh,
+                      onLoading: _onLoading,
+                      child: ListView.builder(
+                        padding: EdgeInsets.only(
+                          left: 20.w,
+                          right: 20.w,
+                          top: 16.h,
+                          bottom: 120.h,
+                        ),
+                        itemCount: state.items.length,
+                        itemBuilder: (context, index) {
+                          final note = state.items[index];
+                          return Padding(
+                            padding: EdgeInsets.only(bottom: 12.h),
+                            child: NoteCard(
+                              note: note,
+                              onTap: () => nav.openNote(note),
+                              onStar: () => ref
+                                  .read(folderNotesProvider.notifier)
+                                  .toggleStar(note.id),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
         ),
       ],
     );
   }
 }
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
 class _EmptyState extends StatelessWidget {
+  const _EmptyState();
+
   @override
   Widget build(BuildContext context) {
     return Center(

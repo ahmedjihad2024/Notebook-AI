@@ -9,6 +9,10 @@ version: 1.0.0+1
 environment:
   sdk: ^3.11.4
 
+# Isar Community fork — the stock isar 3.1.0 generator pins analyzer <6.0 and
+# is incompatible with Dart 3.11 / analyzer 8. The community fork supports it.
+isar_version: &isar_version 3.3.2
+
 dependencies:
   flutter:
     sdk: flutter
@@ -28,18 +32,22 @@ dependencies:
   riverpod: ^3.2.1
   flutter_svg: ^2.0.12
   async: ^2.13.1
-  isar: ^3.1.0+1
+  isar_community: *isar_version
+  isar_community_flutter_libs: *isar_version # contains Isar Core
 
   nice_text_form:
       git: https://github.com/ahmedjihad2024/nice_text_form.git
   go_router: ^17.2.3
   logger: ^2.7.0
   lucide_icons_flutter: ^3.1.14+2
+  dio: ^5.7.0
+  flutter_dotenv: ^5.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^2.12.0
+  isar_community_generator: *isar_version
+  build_runner: any
   flutter_gen_runner:
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
@@ -74,6 +82,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - .env
     - assets/translations/
     - assets/svg/
     - assets/images/

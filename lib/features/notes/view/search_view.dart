@@ -6,15 +6,10 @@ import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/core/res/sizes_manager.dart';
-import 'package:notebook_ai/features/notes/data/models/note_model.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
-import 'package:notebook_ai/features/notes/data/providers/notes_provider.dart';
+import 'package:notebook_ai/features/notes/data/providers/search_provider.dart';
 import 'package:notebook_ai/features/notes/view/widgets/note_card.dart';
 
-/// Search view matching the Figma design.
-///
-/// "Quick Find / Search" header, search input bar, results when querying,
-/// and "Recent" + "Browse by tag" cloud when idle.
 class SearchView extends ConsumerStatefulWidget {
   const SearchView({super.key});
 
@@ -25,7 +20,6 @@ class SearchView extends ConsumerStatefulWidget {
 class _SearchViewState extends ConsumerState<SearchView> {
   final _searchController = TextEditingController();
   final _focusNode = FocusNode();
-  String _query = '';
 
   @override
   void initState() {
@@ -34,7 +28,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
       _focusNode.requestFocus();
     });
     _searchController.addListener(() {
-      setState(() => _query = _searchController.text.trim().toLowerCase());
+      ref.read(searchProvider.notifier).search(_searchController.text);
     });
   }
 
@@ -47,31 +41,11 @@ class _SearchViewState extends ConsumerState<SearchView> {
 
   @override
   Widget build(BuildContext context) {
-    final notes = ref.watch(notesProvider);
     final nav = ref.read(notesNavProvider.notifier);
-
-    // Search results
-    final results = _query.isNotEmpty
-        ? notes.where((n) {
-            return n.title.toLowerCase().contains(_query) ||
-                n.body.toLowerCase().contains(_query) ||
-                n.tags.any(
-                    (t) => t.label.toLowerCase().contains(_query)) ||
-                (n.summary ?? '').toLowerCase().contains(_query);
-          }).toList()
-        : <NoteModel>[];
-
-    // Recent (when not searching)
-    final recent = _query.isEmpty
-        ? (notes.toList()
-          ..sort((a, b) => b.createdAt.compareTo(a.createdAt)))
-            .take(4)
-            .toList()
-        : <NoteModel>[];
+    final state = ref.watch(searchProvider);
 
     return Column(
       children: [
-        // ── Header ──
         Padding(
           padding: EdgeInsets.only(
             left: 20.w,
@@ -100,17 +74,11 @@ class _SearchViewState extends ConsumerState<SearchView> {
                 ),
               ),
               SizedBox(height: 16.h),
-
-              // Search input
               Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 16.w,
-                  vertical: 4.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
                 decoration: BoxDecoration(
                   color: ColorM.cardBackground,
-                  borderRadius:
-                      BorderRadius.circular(SizeM.cardBorderRadius.r),
+                  borderRadius: BorderRadius.circular(SizeM.cardBorderRadius.r),
                   border: Border.all(color: ColorM.border, width: 1),
                 ),
                 child: Row(
@@ -140,7 +108,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
                         ),
                       ),
                     ),
-                    if (_query.isNotEmpty)
+                    if (state.isSearching)
                       GestureDetector(
                         onTap: () => _searchController.clear(),
                         child: Icon(
@@ -155,29 +123,22 @@ class _SearchViewState extends ConsumerState<SearchView> {
             ],
           ),
         ),
-
-        // ── Content ──
         Expanded(
           child: ListView(
-            padding: EdgeInsets.only(
-              left: 20.w,
-              right: 20.w,
-              bottom: 120.h,
-            ),
-            children: _query.isNotEmpty
-                ? _buildSearchResults(results, nav)
-                : _buildIdleContent(recent, nav),
+            padding: EdgeInsets.only(left: 20.w, right: 20.w, bottom: 120.h),
+            children: state.isSearching
+                ? _buildSearchResults(state, nav)
+                : _buildIdleContent(state, nav),
           ),
         ),
       ],
     );
   }
 
-  List<Widget> _buildSearchResults(
-      List<NoteModel> results, NotesNavNotifier nav) {
+  List<Widget> _buildSearchResults(SearchState state, NotesNavNotifier nav) {
     return [
       Text(
-        '${results.length} result${results.length != 1 ? 's' : ''}',
+        '${state.results.length} result${state.results.length != 1 ? 's' : ''}',
         style: TextStyle(
           fontSize: 11.sp,
           fontFamily: FontsM.dmSans.name,
@@ -186,7 +147,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
         ),
       ),
       SizedBox(height: 12.h),
-      if (results.isEmpty)
+      if (state.results.isEmpty && !state.loading)
         Padding(
           padding: EdgeInsets.only(top: 40.h),
           child: Column(
@@ -198,7 +159,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'No matches for "${_searchController.text}"',
+                'No matches for "${state.query}"',
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: ColorM.mutedForeground,
@@ -208,24 +169,22 @@ class _SearchViewState extends ConsumerState<SearchView> {
           ),
         )
       else
-        ...results.map(
+        ...state.results.map(
           (note) => Padding(
             padding: EdgeInsets.only(bottom: 12.h),
             child: NoteCard(
               note: note,
               onTap: () => nav.openNote(note),
               onStar: () =>
-                  ref.read(notesProvider.notifier).toggleStar(note.id),
+                  ref.read(searchProvider.notifier).toggleStar(note.id),
             ),
           ),
         ),
     ];
   }
 
-  List<Widget> _buildIdleContent(
-      List<NoteModel> recent, NotesNavNotifier nav) {
+  List<Widget> _buildIdleContent(SearchState state, NotesNavNotifier nav) {
     return [
-      // Recent section
       Text(
         'RECENT',
         style: TextStyle(
@@ -237,19 +196,17 @@ class _SearchViewState extends ConsumerState<SearchView> {
         ),
       ),
       SizedBox(height: 12.h),
-      ...recent.map(
+      ...state.recent.map(
         (note) => Padding(
           padding: EdgeInsets.only(bottom: 12.h),
           child: NoteCard(
             note: note,
             onTap: () => nav.openNote(note),
             onStar: () =>
-                ref.read(notesProvider.notifier).toggleStar(note.id),
-          ).premiumAppear(index: recent.indexOf(note), baseDelay: 50),
+                ref.read(searchProvider.notifier).toggleStar(note.id),
+          ),
         ),
       ),
-
-      // Tag cloud
       SizedBox(height: 24.h),
       Text(
         'BROWSE BY TAG',
@@ -269,21 +226,13 @@ class _SearchViewState extends ConsumerState<SearchView> {
           final label = entry.key;
           final color = entry.value;
           return GestureDetector(
-            onTap: () {
-              _searchController.text = label;
-            },
+            onTap: () => _searchController.text = label,
             child: Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 12.w,
-                vertical: 6.h,
-              ),
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(100.r),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.2),
-                  width: 1,
-                ),
+                border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,

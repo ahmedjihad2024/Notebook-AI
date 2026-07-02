@@ -1,45 +1,48 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:notebook_ai/core/di/dependency_injection.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
+import 'package:notebook_ai/core/services/ai/ai_service.dart';
+import 'package:notebook_ai/core/utils/logger/app_logger.dart';
 import 'package:notebook_ai/features/notes/data/datasources/notes_datasources.dart';
 import 'package:notebook_ai/features/notes/data/models/note_model.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
 import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
+import 'package:notebook_ai/core/utils/snackbar_helper.dart';
+
+enum AiAction { tag, summarize }
 
 class EditorState {
   final List<AITag> tags;
   final String summary;
   final bool showSummary;
   final bool recording;
-  final String? aiLoading;
-  final String? aiDone;
+  final Set<AiAction> loading;
+  final Set<AiAction> done;
 
   const EditorState({
     this.tags = const [],
     this.summary = '',
     this.showSummary = false,
     this.recording = false,
-    this.aiLoading,
-    this.aiDone,
+    this.loading = const {},
+    this.done = const {},
   });
-
-  static const Object _keep = Object();
 
   EditorState copyWith({
     List<AITag>? tags,
     String? summary,
     bool? showSummary,
     bool? recording,
-    Object? aiLoading = _keep,
-    Object? aiDone = _keep,
+    Set<AiAction>? loading,
+    Set<AiAction>? done,
   }) {
     return EditorState(
       tags: tags ?? this.tags,
       summary: summary ?? this.summary,
       showSummary: showSummary ?? this.showSummary,
       recording: recording ?? this.recording,
-      aiLoading: aiLoading == _keep ? this.aiLoading : aiLoading as String?,
-      aiDone: aiDone == _keep ? this.aiDone : aiDone as String?,
+      loading: loading ?? this.loading,
+      done: done ?? this.done,
     );
   }
 }
@@ -63,53 +66,88 @@ class NoteEditorNotifier extends Notifier<EditorState> {
   }
 
   Future<void> runSummarize(String body) async {
-    state = state.copyWith(aiLoading: 'summarize', aiDone: null);
-    String result;
+    state = state.copyWith(
+      loading: {...state.loading, AiAction.summarize},
+      done: state.done.difference({AiAction.summarize}),
+    );
     try {
       final summary = await DI().ai.summarize(body);
-      result = summary.isEmpty ? summarize(body) : summary;
-    } catch (_) {
-      result = summarize(body);
+      if (_disposed) return;
+      state = state.copyWith(
+        summary: summary,
+        showSummary: true,
+        loading: state.loading.difference({AiAction.summarize}),
+        done: {...state.done, AiAction.summarize},
+      );
+      _clearDoneLater(AiAction.summarize);
+    } catch (error, stack) {
+      _handleAiError(AiAction.summarize, error, stack, 'summarize this note');
     }
-    if (_disposed) return;
-    state = state.copyWith(
-      summary: result,
-      showSummary: true,
-      aiLoading: null,
-      aiDone: 'summarize',
-    );
-    _clearDoneLater('summarize');
   }
 
   Future<void> runTag(String text) async {
-    state = state.copyWith(aiLoading: 'tag', aiDone: null);
-    List<AITag> result;
+    state = state.copyWith(
+      loading: {...state.loading, AiAction.tag},
+      done: state.done.difference({AiAction.tag}),
+    );
     try {
       final labels =
           await DI().ai.classifyTags(text, ColorM.tagColors.keys.toList());
-      result = labels.isEmpty
-          ? inferTags(text)
-          : labels.map(AITag.fromLabel).toList();
-    } catch (_) {
-      result = inferTags(text);
+      if (_disposed) return;
+      state = state.copyWith(
+        tags: labels.map(AITag.fromLabel).toList(),
+        loading: state.loading.difference({AiAction.tag}),
+        done: {...state.done, AiAction.tag},
+      );
+      _clearDoneLater(AiAction.tag);
+    } catch (error, stack) {
+      _handleAiError(AiAction.tag, error, stack, 'auto-tag this note');
     }
-    if (_disposed) return;
-    state = state.copyWith(
-      tags: result,
-      aiLoading: null,
-      aiDone: 'tag',
-    );
-    _clearDoneLater('tag');
   }
 
-  void _clearDoneLater(String action) {
+  void _handleAiError(
+    AiAction action,
+    Object error,
+    StackTrace stack,
+    String fallbackAction,
+  ) {
+    AppLogger.instance.e(error, stackTrace: stack);
+    if (_disposed) return;
+    state = state.copyWith(loading: state.loading.difference({action}));
+    final message = error is AiException
+        ? error.message
+        : 'Couldn\'t $fallbackAction. Please try again.';
+    DI().snackBarHelper.showMessage(
+          message,
+          ErrorMessage.snackBar,
+          isError: true,
+        );
+  }
+
+  void _clearDoneLater(AiAction action) {
     Future.delayed(const Duration(seconds: 2), () {
       if (_disposed) return;
-      if (state.aiDone == action) state = state.copyWith(aiDone: null);
+      if (state.done.contains(action)) {
+        state = state.copyWith(done: state.done.difference({action}));
+      }
     });
   }
 
-  void dismissSummary() => state = state.copyWith(showSummary: false);
+  static const int maxTags = 2;
+
+  void toggleTag(String label) {
+    final selected = state.tags.any((t) => t.label == label);
+    if (selected) {
+      state = state.copyWith(
+        tags: state.tags.where((t) => t.label != label).toList(),
+      );
+    } else if (state.tags.length < maxTags) {
+      state = state.copyWith(tags: [...state.tags, AITag.fromLabel(label)]);
+    }
+  }
+
+  void dismissSummary() =>
+      state = state.copyWith(summary: '', showSummary: false);
 
   String? toggleVoice() {
     if (state.recording) {

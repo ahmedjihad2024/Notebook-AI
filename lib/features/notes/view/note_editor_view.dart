@@ -57,6 +57,14 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
     if (appended != null) _bodyController.text += appended;
   }
 
+  void _openTagPicker() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (_) => const _TagPickerSheet(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(noteEditorProvider);
@@ -96,19 +104,44 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
               ),
               SizedBox(width: 8.w),
               Expanded(
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: state.tags
-                        .take(2)
-                        .map(
-                          (tag) => Padding(
-                            padding: EdgeInsetsDirectional.only(end: 6.w),
-                            child: TagPill(tag: tag),
-                          ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _openTagPicker,
+                  child: state.tags.isEmpty
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              LucideIcons.hash,
+                              size: 14.sp,
+                              color: ColorM.mutedForeground,
+                            ),
+                            SizedBox(width: 4.w),
+                            Text(
+                              'Add tags',
+                              style: TextStyle(
+                                fontSize: 12.sp,
+                                fontFamily: FontsM.dmSans.name,
+                                color: ColorM.mutedForeground,
+                              ),
+                            ),
+                          ],
                         )
-                        .toList(),
-                  ),
+                      : SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: state.tags
+                                .take(2)
+                                .map(
+                                  (tag) => Padding(
+                                    padding:
+                                        EdgeInsetsDirectional.only(end: 6.w),
+                                    child: TagPill(tag: tag),
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
                 ),
               ),
               if (!isNew)
@@ -258,42 +291,42 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                   children: [
                     Expanded(
                       child: _AIActionButton(
-                        label: state.aiLoading == 'summarize'
+                        label: state.loading.contains(AiAction.summarize)
                             ? 'Summarizing…'
-                            : state.aiDone == 'summarize'
+                            : state.done.contains(AiAction.summarize)
                                 ? 'Done!'
                                 : 'Summarize',
-                        icon: state.aiLoading == 'summarize'
+                        icon: state.loading.contains(AiAction.summarize)
                             ? null
-                            : state.aiDone == 'summarize'
+                            : state.done.contains(AiAction.summarize)
                                 ? LucideIcons.check
                                 : LucideIcons.alignLeft,
-                        isLoading: state.aiLoading == 'summarize',
-                        isDone: state.aiDone == 'summarize',
+                        isLoading: state.loading.contains(AiAction.summarize),
+                        isDone: state.done.contains(AiAction.summarize),
                         doneColor: ColorM.tagIdeas,
                         enabled:
-                            state.aiLoading == null && body.trim().length >= 20,
+                            state.loading.isEmpty && body.trim().length >= 20,
                         onTap: () => _editor.runSummarize(body),
                       ),
                     ),
                     SizedBox(width: 8.w),
                     Expanded(
                       child: _AIActionButton(
-                        label: state.aiLoading == 'tag'
+                        label: state.loading.contains(AiAction.tag)
                             ? 'Tagging…'
-                            : state.aiDone == 'tag'
+                            : state.done.contains(AiAction.tag)
                                 ? 'Tagged!'
                                 : 'Auto-tag',
-                        icon: state.aiLoading == 'tag'
+                        icon: state.loading.contains(AiAction.tag)
                             ? null
-                            : state.aiDone == 'tag'
+                            : state.done.contains(AiAction.tag)
                                 ? LucideIcons.check
                                 : LucideIcons.wand2,
-                        isLoading: state.aiLoading == 'tag',
-                        isDone: state.aiDone == 'tag',
+                        isLoading: state.loading.contains(AiAction.tag),
+                        isDone: state.done.contains(AiAction.tag),
                         doneColor: ColorM.tagWork,
                         enabled:
-                            state.aiLoading == null && body.trim().length >= 10,
+                            state.loading.isEmpty && body.trim().length >= 10,
                         onTap: () => _editor.runTag(
                           '$body ${_titleController.text}',
                         ),
@@ -475,6 +508,118 @@ class _PulsingDotState extends State<_PulsingDot>
         decoration: const BoxDecoration(
           color: ColorM.recordingRed,
           shape: BoxShape.circle,
+        ),
+      ),
+    );
+  }
+}
+
+class _TagPickerSheet extends ConsumerWidget {
+  const _TagPickerSheet();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selected =
+        ref.watch(noteEditorProvider).tags.map((t) => t.label).toSet();
+    final notifier = ref.read(noteEditorProvider.notifier);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: ColorM.cardBackground,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        border: Border.all(color: ColorM.border, width: 1),
+      ),
+      padding: EdgeInsets.fromLTRB(20.w, 10.h, 20.w, 20.h),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40.w,
+                height: 4.h,
+                decoration: BoxDecoration(
+                  color: ColorM.border,
+                  borderRadius: BorderRadius.circular(2.r),
+                ),
+              ),
+            ),
+            SizedBox(height: 16.h),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Tags',
+                  style: context.titleMedium.copyWith(
+                    fontWeight: FontWeightM.bold,
+                    color: ColorM.foreground,
+                  ),
+                ),
+                Text(
+                  '${selected.length}/${NoteEditorNotifier.maxTags}',
+                  style: TextStyle(
+                    fontSize: 12.sp,
+                    fontFamily: FontsM.dmSans.name,
+                    color: ColorM.mutedForeground,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 16.h),
+            Wrap(
+              spacing: 8.w,
+              runSpacing: 8.h,
+              children: ColorM.tagColors.entries.map((entry) {
+                final label = entry.key;
+                final color = entry.value;
+                final isSelected = selected.contains(label);
+                final atMax = !isSelected &&
+                    selected.length >= NoteEditorNotifier.maxTags;
+                return GestureDetector(
+                  onTap: atMax ? null : () => notifier.toggleTag(label),
+                  child: AnimatedOpacity(
+                    duration: const Duration(milliseconds: 150),
+                    opacity: atMax ? 0.35 : 1,
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12.w, vertical: 7.h),
+                      decoration: BoxDecoration(
+                        color: color.withValues(alpha: isSelected ? 0.22 : 0.08),
+                        borderRadius: BorderRadius.circular(100.r),
+                        border: Border.all(
+                          color:
+                              color.withValues(alpha: isSelected ? 0.6 : 0.2),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            isSelected ? LucideIcons.check : LucideIcons.hash,
+                            size: 12.sp,
+                            color: color,
+                          ),
+                          SizedBox(width: 4.w),
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 12.sp,
+                              fontFamily: FontsM.dmSans.name,
+                              fontWeight: FontWeightM.medium,
+                              color: color,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );

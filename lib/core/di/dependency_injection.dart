@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:notebook_ai/core/services/storage_services/secure_storage_service.dart';
 import 'package:notebook_ai/core/services/storage_services/shared_prefrences_service.dart';
-import 'package:notebook_ai/core/services/ai/anthropic_service.dart';
+import 'package:notebook_ai/core/services/ai/ai_service.dart';
 import 'package:notebook_ai/core/services/storage_services/storage_service.dart';
 import 'package:notebook_ai/core/utils/overlay_loading/overlay_loading_manager.dart';
 import 'package:notebook_ai/core/utils/snackbar_helper.dart';
@@ -23,7 +23,7 @@ class DI {
   static final _storageService            = Provider((ref) => StorageService(ref.read(_secureStorage), ref.read(_sharedPrefsService)));
 
 
-  static final _anthropicService          = Provider((ref) => AnthropicService());
+  static final _aiService                 = Provider((ref) => AiService());
 
   // --- snack bar Helper
   static final _snackBarHelper            = Provider((ref) => SnackbarHelper());
@@ -53,7 +53,7 @@ extension DICoreServicesExtension on DI {
   LoadingManager      get loadingService   => DI.container.read(DI._loadingService);
   Isar                get isar           => DI.container.read(DI._isarProvider);
   NotesDataSource     get notesDataSource  => DI.container.read(DI._notesDataSourceProvider);
-  AnthropicService    get ai               => DI.container.read(DI._anthropicService);
+  AiService           get ai               => DI.container.read(DI._aiService);
 }
 
 // dart format on

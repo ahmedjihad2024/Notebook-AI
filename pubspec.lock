@@ -701,15 +701,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
-  nice_text_form:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "9bd2a3da86a77faf755e8c40bcca03c572efd712"
-      url: "https://github.com/ahmedjihad2024/nice_text_form.git"
-    source: git
-    version: "2.0.0+2"
   node_preamble:
     dependency: transitive
     description:

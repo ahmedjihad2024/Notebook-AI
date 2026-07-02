@@ -1,5 +1,6 @@
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/material.dart';
+import 'package:lucide_icons_flutter/lucide_icons.dart';
 
 // import 'package:fluttertoast/fluttertoast.dart';
 import 'package:notebook_ai/core/app.dart';
@@ -48,21 +49,36 @@ class SnackbarHelper {
             ...actions,
             Expanded(
               child: Container(
-                padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 12.w),
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.w),
                 width: double.infinity,
                 decoration: ShapeDecoration(
-                  color: ColorM.white,
+                  color: ColorM.cardBackground,
                   shape: SmoothRectangleBorder(
                     borderRadius: BorderRadius.circular(10.r),
                     smoothness: 1,
-                    side: GradientBorderSide(color: ColorM.primary, width: 1.w),
+                    side: GradientBorderSide(
+                      color: isError ? ColorM.destructive : ColorM.primaryAccent,
+                      width: 1.w,
+                    ),
                   ),
                 ),
-                alignment: AlignmentDirectional.centerStart,
-                child: Text(
-                  message,
-                  softWrap: true,
-                  style: NAVIGATOR_KEY.currentState!.context.labelMedium,
+                child: Row(
+                  children: [
+                    Icon(
+                      isError ? LucideIcons.circleAlert : LucideIcons.info,
+                      size: 16.sp,
+                      color: isError ? ColorM.destructive : ColorM.primaryAccent,
+                    ),
+                    SizedBox(width: 10.w),
+                    Expanded(
+                      child: Text(
+                        message,
+                        softWrap: true,
+                        style: NAVIGATOR_KEY.currentState!.context.labelMedium
+                            .copyWith(color: ColorM.foreground),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

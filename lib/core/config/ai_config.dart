@@ -1,13 +1,19 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 abstract class AiConfig {
-  static String get anthropicApiKey => dotenv.env['ANTHROPIC_API_KEY'] ?? '';
+  static String get geminiApiKey => dotenv.env['GEMINI_API_KEY'] ?? '';
 
-  static const String model = 'claude-haiku-4-5';
+  static String get model {
+    final configured = dotenv.env['GEMINI_MODEL'];
+    return (configured != null && configured.isNotEmpty)
+        ? configured
+        : 'gemini-2.5-flash';
+  }
 
-  static const String baseUrl = 'https://api.anthropic.com/v1/messages';
+  static const String baseUrl =
+      'https://generativelanguage.googleapis.com/v1beta/models';
 
-  static const String apiVersion = '2023-06-01';
+  static String get endpoint => '$baseUrl/$model:generateContent';
 
-  static bool get isConfigured => anthropicApiKey.isNotEmpty;
+  static bool get isConfigured => geminiApiKey.isNotEmpty;
 }

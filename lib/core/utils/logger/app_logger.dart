@@ -28,7 +28,7 @@ class AppLogger {
       // real caller (e.g. auth_view.dart), not app_logger.dart. Unlike
       // stackTraceBeginIndex, this filters the frame out entirely, so explicit
       // error stack traces stay intact.
-      excludePaths: const ['package:for_u/app/utils/logger/'],
+      excludePaths: const ['package:notebook_ai/core/utils/logger/'],
       methodCount: 1,
       errorMethodCount: 8,
       lineLength: 100,

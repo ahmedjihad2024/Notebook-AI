@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:for_u/presentation/res/color_manager.dart';
+import 'package:notebook_ai/core/res/color_manager.dart';
 
 class MyCircularProgressIndicator extends StatelessWidget {
   const MyCircularProgressIndicator({super.key});

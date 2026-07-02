@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:for_u/app/utils/mixins/after_layout.dart';
+import 'package:notebook_ai/core/utils/mixins/after_layout.dart';
 
 class CaptureController {
   late Future<Uint8List> Function() _captureWidget;

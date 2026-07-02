@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:for_u/app/utils/overlay_loading/overlay_loading.dart';
-import 'package:for_u/presentation/res/gen/assets.gen.dart';
-import 'package:lottie/lottie.dart';
+import 'package:notebook_ai/core/utils/overlay_loading/overlay_loading.dart';
 
-import '../../../presentation/res/color_manager.dart';
+
 
 abstract class LoadingManager {
   void show({
@@ -52,16 +49,6 @@ class OverlayLoadingManager implements LoadingManager {
       showMessage: showMessage,
       allowBackButton: allowBackButton,
       animationDuration: animationDuration,
-      customWidget:
-          customWidget ??
-          Lottie.asset(
-            Assets.lottieAnimations.sandyLoading.path,
-            key: Key("loading-lottie"),
-            width: 100.w,
-            height: 100.w,
-            repeat: true,
-            fit: BoxFit.contain,
-          ),
     );
   }
 

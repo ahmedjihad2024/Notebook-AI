@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:for_u/presentation/res/router/app_router.dart';
+import 'package:notebook_ai/core/res/router/app_router.dart';
 
 // ---------------------------------------------------------------------------
 // Navigation Extensions (go_router)
 // Use inside widgets where you have a BuildContext.
 // Outside the widget tree (services, DI, notification callbacks), use
-// `appRouter` directly from `lib/presentation/res/router/app_router.dart`.
+// `appRouter` directly from `lib/core/res/router/app_router.dart`.
 // ---------------------------------------------------------------------------
 extension NavigationExtension on BuildContext {
   // ── Push ──────────────────────────────────────────────────────────────────

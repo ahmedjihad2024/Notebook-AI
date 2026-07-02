@@ -4,8 +4,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:for_u/app/ui_kit/shapes/gradient_border_side.dart' as s;
-import 'package:for_u/app/extensions/theme_extensions.dart';
+import 'package:notebook_ai/core/ui_kit/shapes/gradient_border_side.dart' as s;
+import 'package:notebook_ai/core/extensions/theme_extensions.dart';
 
 class OtpField extends StatefulWidget {
   final int length;
@@ -86,8 +86,9 @@ class _OtpFieldState extends State<OtpField> {
         if (focusNodes[index].hasFocus) {
           setState(() => selectedIndex = index);
           final text = textEditingControllers[index].text;
-          textEditingControllers[index].selection =
-              TextSelection.collapsed(offset: text.length);
+          textEditingControllers[index].selection = TextSelection.collapsed(
+            offset: text.length,
+          );
         } else if (index == selectedIndex) {
           setState(() => selectedIndex = -1);
         }

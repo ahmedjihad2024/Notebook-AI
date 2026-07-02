@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:for_u/app/ui_kit/animations/animated_on_appear.dart';
-import 'package:for_u/app/ui_kit/animations/animations_enum.dart';
+import 'package:notebook_ai/core/ui_kit/animations/animated_on_appear.dart';
+import 'package:notebook_ai/core/ui_kit/animations/animations_enum.dart';
 
 extension PulseAnimation on Widget {
   Widget pluseAnimation(int index, [bool enablePluse = true]) {

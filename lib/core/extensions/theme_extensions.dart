@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:for_u/app/app.dart';
+import 'package:notebook_ai/core/app.dart';
 
 // dart format off
 extension ThemeSettings on BuildContext {

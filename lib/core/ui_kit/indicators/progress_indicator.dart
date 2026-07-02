@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import 'package:for_u/presentation/res/color_manager.dart';
+import 'package:notebook_ai/core/res/color_manager.dart';
 
 class MProgressIndicator extends StatelessWidget {
   final double? height;

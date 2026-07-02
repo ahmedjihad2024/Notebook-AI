@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:for_u/app/config/constants.dart';
+import 'package:notebook_ai/core/config/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 // dart format off

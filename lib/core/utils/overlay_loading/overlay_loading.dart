@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
-import 'package:for_u/app/app.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:for_u/presentation/res/fonts_manager.dart';
-import 'package:for_u/presentation/res/translations_manager.dart';
+import 'package:notebook_ai/core/app.dart';
+import 'package:notebook_ai/core/res/fonts_manager.dart';
+import 'package:notebook_ai/core/res/translations_manager.dart';
 
 enum LoadingType { spinner, dots, pulse, custom, widget }
 

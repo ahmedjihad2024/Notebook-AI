@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:for_u/app/extensions/extensions.dart';
-import 'package:for_u/presentation/res/color_manager.dart';
+import 'package:notebook_ai/core/extensions/extensions.dart';
+import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class CustomPopupMenu<T> extends StatelessWidget {

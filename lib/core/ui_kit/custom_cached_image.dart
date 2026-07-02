@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:for_u/app/extensions/extensions.dart';
-import 'package:for_u/presentation/res/gen/assets.gen.dart';
+import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class CustomCachedImage extends StatelessWidget {
@@ -53,16 +51,6 @@ class CustomCachedImage extends StatelessWidget {
                 color:
                     errorBackgroundColor ??
                     context.colorScheme.surface.withValues(alpha: 0.1),
-              ),
-              child: SvgPicture.asset(
-                Assets.svg.appLogo.path,
-                width: finalWidth * 0.8,
-                height: finalHeight * 0.8,
-                fit: BoxFit.cover,
-                colorFilter: ColorFilter.mode(
-                  Colors.black.withValues(alpha: .1),
-                  BlendMode.srcIn,
-                ),
               ),
             ),
     );

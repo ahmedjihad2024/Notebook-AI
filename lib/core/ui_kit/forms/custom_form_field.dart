@@ -10,7 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:for_u/app/extensions/extensions.dart';
+import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:nice_text_form/nice_text_form.dart';
 import '../../utils/mixins/after_layout.dart';
 

@@ -1,17 +1,13 @@
-# notebook_ai
+# Notebook AI
 
-A new Flutter project.
+An AI-powered note-taking app built with Flutter.
 
-## Getting Started
+## Project Documentation
 
-This project is a starting point for a Flutter application.
+We maintain a comprehensive, senior-level documentation structure to ensure scalability, clean architecture, and team traceability. All project documentation is housed in the [`doc/`](doc/) directory.
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **[Documentation Overview](doc/guides/README.md)**: Start here to understand how our documentation is structured.
+- **[Architecture Guide](doc/architecture/ARCHITECTURE.md)**: Feature-first architecture with Riverpod state management.
+- **[Contribution Guidelines](doc/guides/CONTRIBUTING.md)**: Workflow standards, Conventional Commits, branch naming.
+- **[Testing Strategy](doc/testing/testing_strategy.md)**: Guidelines for writing unit and integration tests.
+- **[Feature Documentation](doc/features/)**: Detailed breakdowns for core features.

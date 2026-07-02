@@ -65,7 +65,7 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'AI Notes',
+                        'Notebook AI',
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontsM.dmSans.name,

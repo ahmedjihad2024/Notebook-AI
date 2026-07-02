@@ -82,3 +82,5 @@ jobs:
                 echo "Deleting old release and tag: $tag"
                 gh release delete "$tag" --yes --cleanup-tag
               done
+
+              

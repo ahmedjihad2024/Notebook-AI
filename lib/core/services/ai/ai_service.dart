@@ -62,7 +62,7 @@ class AiService {
   Future<List<String>> classifyTags(String text, List<String> allowed) async {
     final data = await _generate(
       system:
-          'You label notes with the 1 to 3 most relevant tags. Choose only from the allowed list; never invent tags.',
+          'You label notes with the 1 to 2 most relevant tags. Choose only from the allowed list; never invent tags.',
       parts: [
         {'text': 'Allowed tags: ${allowed.join(', ')}\n\nNote:\n$text'},
       ],

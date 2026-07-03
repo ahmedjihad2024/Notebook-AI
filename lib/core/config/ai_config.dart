@@ -7,7 +7,7 @@ abstract class AiConfig {
     final configured = dotenv.env['GEMINI_MODEL'];
     return (configured != null && configured.isNotEmpty)
         ? configured
-        : 'gemini-2.5-flash';
+        : 'gemini-3.1-flash-lite';
   }
 
   static const String baseUrl =

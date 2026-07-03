@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:notebook_ai/core/config/ai_config.dart';
 
 enum AiErrorKind {
@@ -41,13 +43,29 @@ class AiService {
                 connectTimeout: const Duration(seconds: 20),
                 receiveTimeout: const Duration(seconds: 30),
               ),
-            );
+            ) {
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        PrettyDioLogger(
+          requestHeader: false,
+          requestBody: true,
+          responseHeader: false,
+          responseBody: true,
+          error: true,
+          compact: false,
+          maxWidth: 120,
+        ),
+      );
+    }
+  }
 
   Future<List<String>> classifyTags(String text, List<String> allowed) async {
     final data = await _generate(
       system:
           'You label notes with the 1 to 3 most relevant tags. Choose only from the allowed list; never invent tags.',
-      userText: 'Allowed tags: ${allowed.join(', ')}\n\nNote:\n$text',
+      parts: [
+        {'text': 'Allowed tags: ${allowed.join(', ')}\n\nNote:\n$text'},
+      ],
       maxTokens: 256,
       schema: {
         'type': 'OBJECT',
@@ -76,7 +94,9 @@ class AiService {
     final data = await _generate(
       system:
           'Summarize the note in one concise sentence. Respond with only that sentence.',
-      userText: text,
+      parts: [
+        {'text': text},
+      ],
       maxTokens: 400,
     );
     final summary = _firstText(data).trim();
@@ -91,7 +111,7 @@ class AiService {
 
   Future<Map<String, dynamic>> _generate({
     required String system,
-    required String userText,
+    required List<Map<String, dynamic>> parts,
     required int maxTokens,
     Map<String, dynamic>? schema,
   }) async {
@@ -113,9 +133,7 @@ class AiService {
           'contents': [
             {
               'role': 'user',
-              'parts': [
-                {'text': userText},
-              ],
+              'parts': parts,
             },
           ],
           'generationConfig': {

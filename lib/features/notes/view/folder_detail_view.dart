@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -7,8 +8,10 @@ import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/core/ui_kit/customized_smart_refresh.dart';
+import 'package:notebook_ai/core/ui_kit/directional_back_icon.dart';
 import 'package:notebook_ai/features/notes/data/providers/folder_notes_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
+import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 import 'package:notebook_ai/features/notes/view/widgets/note_card.dart';
 
 class FolderDetailView extends ConsumerStatefulWidget {
@@ -71,14 +74,14 @@ class _FolderDetailViewState extends ConsumerState<FolderDetailView> {
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(
-                            LucideIcons.arrowLeft,
+                          DirectionalBackIcon(
+                            icon: LucideIcons.arrowLeft,
                             size: 18.sp,
                             color: ColorM.primaryAccent,
                           ),
                           SizedBox(width: 6.w),
                           Text(
-                            'Folders',
+                            'folder_detail.back'.tr(),
                             style: TextStyle(
                               fontSize: 14.sp,
                               fontFamily: FontsM.dmSans.name,
@@ -90,7 +93,9 @@ class _FolderDetailViewState extends ConsumerState<FolderDetailView> {
                     ),
                     SizedBox(height: 12.h),
                     Text(
-                      folder == '__all__' ? 'All Notes' : folder,
+                      folder == '__all__'
+                          ? 'folders.all_notes'.tr()
+                          : localizedTag(folder),
                       style: context.titleLarge.copyWith(
                         fontWeight: FontWeightM.bold,
                         color: ColorM.foreground,
@@ -98,7 +103,8 @@ class _FolderDetailViewState extends ConsumerState<FolderDetailView> {
                     ),
                     SizedBox(height: 2.h),
                     Text(
-                      '${state.total} notes',
+                      'folder_detail.notes_count'
+                          .tr(namedArgs: {'total': '${state.total}'}),
                       style: TextStyle(
                         fontSize: 12.sp,
                         fontFamily: FontsM.dmSans.name,
@@ -176,7 +182,7 @@ class _EmptyState extends StatelessWidget {
           ),
           SizedBox(height: 8.h),
           Text(
-            'No notes yet',
+            'folder_detail.empty'.tr(),
             style: TextStyle(
               fontSize: 14.sp,
               color: ColorM.mutedForeground,

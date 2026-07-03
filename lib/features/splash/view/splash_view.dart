@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
@@ -85,7 +86,7 @@ class _SplashViewState extends State<SplashView>
                 ),
                 SizedBox(height: 20.h),
                 Text(
-                  'Notebook AI',
+                  'app.name'.tr(),
                   style: context.headlineMedium.copyWith(
                     fontWeight: FontWeightM.bold,
                     color: ColorM.foreground,
@@ -94,7 +95,7 @@ class _SplashViewState extends State<SplashView>
                 ),
                 SizedBox(height: 6.h),
                 Text(
-                  'Smart note-taking',
+                  'app.tagline'.tr(),
                   style: TextStyle(
                     fontSize: 14.sp,
                     fontFamily: 'monospace',

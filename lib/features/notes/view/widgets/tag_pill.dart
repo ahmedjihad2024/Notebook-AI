@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:lucide_icons_flutter/lucide_icons.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/features/notes/data/models/note_model.dart';
+import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 
 /// Pill-shaped tag chip matching the Figma design.
 ///
@@ -34,7 +35,7 @@ class TagPill extends StatelessWidget {
           ),
           SizedBox(width: 2.w),
           Text(
-            tag.label,
+            localizedTag(tag.label),
             style: TextStyle(
               fontSize: 10.sp,
               fontWeight: FontWeightM.medium,

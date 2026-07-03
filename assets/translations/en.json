@@ -1,3 +1,115 @@
 {
-  
+  "app": {
+    "name": "Notebook AI",
+    "tagline": "Smart note-taking"
+  },
+  "nav": {
+    "notes": "Notes",
+    "folders": "Folders",
+    "search": "Search"
+  },
+  "home": {
+    "eyebrow": "Notebook AI",
+    "title": "My Notes",
+    "stats": "{total} notes · {starred} starred",
+    "section_starred": "STARRED",
+    "section_recent": "RECENT"
+  },
+  "folders": {
+    "eyebrow": "Smart Folders",
+    "title": "Organize",
+    "all_notes": "All Notes",
+    "by_category": "BY CATEGORY",
+    "note_count": {
+      "one": "{} note",
+      "other": "{} notes"
+    }
+  },
+  "folder_detail": {
+    "back": "Folders",
+    "notes_count": "{total} notes",
+    "empty": "No notes yet"
+  },
+  "search": {
+    "eyebrow": "Quick Find",
+    "title": "Search",
+    "hint": "Search notes, tags, folders…",
+    "results": {
+      "one": "{} result",
+      "other": "{} results"
+    },
+    "no_matches": "No matches for \"{query}\"",
+    "recent": "RECENT",
+    "browse_by_tag": "BROWSE BY TAG"
+  },
+  "editor": {
+    "add_tags": "Add tags",
+    "title_hint": "Note title…",
+    "ai_summary": "AI SUMMARY",
+    "body_hint": "Start writing… or tap the mic to record.",
+    "summarize": "Summarize",
+    "summarizing": "Summarizing…",
+    "summarized": "Done!",
+    "autotag": "Auto-tag",
+    "tagging": "Tagging…",
+    "tagged": "Tagged!",
+    "listening": "Listening… tap mic to stop",
+    "tags_title": "Tags",
+    "tags_counter": "{count}/{max}"
+  },
+  "time": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "days_ago": {
+      "one": "{} day ago",
+      "other": "{} days ago"
+    }
+  },
+  "voice": {
+    "unavailable": "Speech recognition isn't available on this device.",
+    "failed": "Couldn't recognize speech. Please try again.",
+    "lang_missing": "This language isn't installed for voice input, so recording uses your device's default language.",
+    "lang_missing_hint": "To add it: Settings → System → Languages & input → Voice input / On-device speech recognition → download the language."
+  },
+  "ai_errors": {
+    "rate_limit": "You've hit the free AI usage limit for now. Wait a minute, then try again.",
+    "not_configured": "AI features aren't set up yet. Add your API key to enable them.",
+    "network": "No internet connection. Connect and try again.",
+    "timeout": "The AI request took too long. Check your connection and try again.",
+    "auth": "The AI API key is invalid. Please check your setup.",
+    "permission": "This API key isn't allowed to use the AI model.",
+    "overloaded": "The AI service is busy right now. Try again in a moment.",
+    "server": "The AI service ran into a problem. Try again shortly.",
+    "invalid_request": "The AI couldn't process this note. Try adjusting the text.",
+    "empty": "The AI didn't return a result. Please try again.",
+    "unknown": "Something went wrong with the AI. Please try again."
+  },
+  "tags": {
+    "Work": "Work",
+    "Ideas": "Ideas",
+    "Personal": "Personal",
+    "Research": "Research",
+    "Shopping": "Shopping",
+    "Health": "Health",
+    "Travel": "Travel",
+    "Finance": "Finance",
+    "Reading": "Reading",
+    "Coding": "Coding",
+    "Food": "Food",
+    "Music": "Music",
+    "Movies": "Movies",
+    "Learning": "Learning",
+    "Goals": "Goals",
+    "Events": "Events",
+    "Quotes": "Quotes",
+    "Projects": "Projects",
+    "Others": "Others"
+  },
+  "loading": "Loading…",
+  "no_more": "No more notes",
+  "failed_loading": "Couldn't load. Pull to retry.",
+  "load_more": "Pull up to load more",
+  "language": {
+    "code": "EN"
+  }
 }

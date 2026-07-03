@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -31,7 +32,7 @@ class FoldersView extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Smart Folders',
+                'folders.eyebrow'.tr(),
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontsM.dmSans.name,
@@ -41,7 +42,7 @@ class FoldersView extends ConsumerWidget {
               ),
               SizedBox(height: 2.h),
               Text(
-                'Organize',
+                'folders.title'.tr(),
                 style: context.headlineSmall.copyWith(
                   fontWeight: FontWeightM.bold,
                   color: ColorM.foreground,
@@ -72,7 +73,7 @@ class FoldersView extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'All Notes',
+                            'folders.all_notes'.tr(),
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontFamily: FontsM.dmSans.name,
@@ -99,7 +100,7 @@ class FoldersView extends ConsumerWidget {
                 ),
               ),
               Text(
-                'BY CATEGORY',
+                'folders.by_category'.tr(),
                 style: TextStyle(
                   fontSize: 11.sp,
                   fontFamily: FontsM.dmSans.name,
@@ -157,7 +158,7 @@ class FoldersView extends ConsumerWidget {
                           ),
                           SizedBox(height: 12.h),
                           Text(
-                            folder,
+                            localizedTag(folder),
                             style: context.bodyMedium.copyWith(
                               fontWeight: FontWeightM.semiBold,
                               color: ColorM.foreground,
@@ -165,7 +166,7 @@ class FoldersView extends ConsumerWidget {
                           ),
                           SizedBox(height: 2.h),
                           Text(
-                            '$count note${count != 1 ? 's' : ''}',
+                            plural('folders.note_count', count),
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontFamily: FontsM.dmSans.name,

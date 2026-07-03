@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,6 +9,7 @@ import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/core/res/sizes_manager.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/search_provider.dart';
+import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 import 'package:notebook_ai/features/notes/view/widgets/note_card.dart';
 
 class SearchView extends ConsumerStatefulWidget {
@@ -57,7 +59,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Quick Find',
+                'search.eyebrow'.tr(),
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontsM.dmSans.name,
@@ -67,7 +69,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
               ),
               SizedBox(height: 2.h),
               Text(
-                'Search',
+                'search.title'.tr(),
                 style: context.headlineSmall.copyWith(
                   fontWeight: FontWeightM.bold,
                   color: ColorM.foreground,
@@ -98,7 +100,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
                           color: ColorM.foreground,
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search notes, tags, folders…',
+                          hintText: 'search.hint'.tr(),
                           hintStyle: TextStyle(
                             fontSize: 14.sp,
                             color: ColorM.mutedForeground,
@@ -138,7 +140,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
   List<Widget> _buildSearchResults(SearchState state, NotesNavNotifier nav) {
     return [
       Text(
-        '${state.results.length} result${state.results.length != 1 ? 's' : ''}',
+        plural('search.results', state.results.length),
         style: TextStyle(
           fontSize: 11.sp,
           fontFamily: FontsM.dmSans.name,
@@ -159,7 +161,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
               ),
               SizedBox(height: 8.h),
               Text(
-                'No matches for "${state.query}"',
+                'search.no_matches'.tr(namedArgs: {'query': state.query}),
                 style: TextStyle(
                   fontSize: 14.sp,
                   color: ColorM.mutedForeground,
@@ -186,7 +188,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
   List<Widget> _buildIdleContent(SearchState state, NotesNavNotifier nav) {
     return [
       Text(
-        'RECENT',
+        'search.recent'.tr(),
         style: TextStyle(
           fontSize: 11.sp,
           fontFamily: FontsM.dmSans.name,
@@ -209,7 +211,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
       ),
       SizedBox(height: 24.h),
       Text(
-        'BROWSE BY TAG',
+        'search.browse_by_tag'.tr(),
         style: TextStyle(
           fontSize: 11.sp,
           fontFamily: FontsM.dmSans.name,
@@ -240,7 +242,7 @@ class _SearchViewState extends ConsumerState<SearchView> {
                   Icon(LucideIcons.tag, size: 12.sp, color: color),
                   SizedBox(width: 4.w),
                   Text(
-                    label,
+                    localizedTag(label),
                     style: TextStyle(
                       fontSize: 12.sp,
                       fontFamily: FontsM.dmSans.name,

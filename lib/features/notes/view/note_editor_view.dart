@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -6,8 +7,10 @@ import 'package:notebook_ai/core/extensions/extensions.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 import 'package:notebook_ai/core/res/fonts_manager.dart';
 import 'package:notebook_ai/core/res/sizes_manager.dart';
+import 'package:notebook_ai/core/ui_kit/directional_back_icon.dart';
 import 'package:notebook_ai/features/notes/data/providers/navigation_provider.dart';
 import 'package:notebook_ai/features/notes/data/providers/note_editor_provider.dart';
+import 'package:notebook_ai/features/notes/data/utils/note_utils.dart';
 import 'package:notebook_ai/features/notes/view/widgets/tag_pill.dart';
 
 class NoteEditorView extends ConsumerStatefulWidget {
@@ -52,10 +55,10 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
     ref.read(notesNavProvider.notifier).goToList();
   }
 
-  void _handleVoice() {
-    final appended = _editor.toggleVoice();
-    if (appended != null) _bodyController.text += appended;
-  }
+  Future<void> _handleVoice() => _editor.toggleVoice(
+        _bodyController.text,
+        languageCode: context.locale.languageCode,
+      );
 
   void _openTagPicker() {
     showModalBottomSheet(
@@ -67,6 +70,17 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(
+      noteEditorProvider.select((s) => s.voiceDraft),
+      (previous, next) {
+        if (!ref.read(noteEditorProvider).recording) return;
+        _bodyController.value = TextEditingValue(
+          text: next,
+          selection: TextSelection.collapsed(offset: next.length),
+        );
+      },
+    );
+
     final state = ref.watch(noteEditorProvider);
     final isNew = ref.read(notesNavProvider).activeNote == null;
     final body = _bodyController.text;
@@ -95,8 +109,8 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12.r),
                   ),
-                  child: Icon(
-                    LucideIcons.arrowLeft,
+                  child: DirectionalBackIcon(
+                    icon: LucideIcons.arrowLeft,
                     size: 22.sp,
                     color: ColorM.primaryAccent,
                   ),
@@ -118,7 +132,7 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                             ),
                             SizedBox(width: 4.w),
                             Text(
-                              'Add tags',
+                              'editor.add_tags'.tr(),
                               style: TextStyle(
                                 fontSize: 12.sp,
                                 fontFamily: FontsM.dmSans.name,
@@ -176,7 +190,7 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                     color: ColorM.foreground,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Note title…',
+                    hintText: 'editor.title_hint'.tr(),
                     hintStyle: context.titleLarge.copyWith(
                       fontWeight: FontWeightM.bold,
                       color: ColorM.mutedForeground,
@@ -214,7 +228,7 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                                 ),
                                 SizedBox(width: 6.w),
                                 Text(
-                                  'AI SUMMARY',
+                                  'editor.ai_summary'.tr(),
                                   style: TextStyle(
                                     fontSize: 10.sp,
                                     fontFamily: FontsM.dmSans.name,
@@ -236,9 +250,9 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                             ),
                           ],
                         ),
-                        Positioned(
+                        PositionedDirectional(
                           top: 0,
-                          right: 0,
+                          end: 0,
                           child: GestureDetector(
                             onTap: _editor.dismissSummary,
                             child: Icon(
@@ -261,7 +275,7 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                     height: 1.6,
                   ),
                   decoration: InputDecoration(
-                    hintText: 'Start writing… or tap the mic to record.',
+                    hintText: 'editor.body_hint'.tr(),
                     hintStyle: TextStyle(
                       fontSize: 14.sp,
                       color: ColorM.mutedForeground,
@@ -292,10 +306,10 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                     Expanded(
                       child: _AIActionButton(
                         label: state.loading.contains(AiAction.summarize)
-                            ? 'Summarizing…'
+                            ? 'editor.summarizing'.tr()
                             : state.done.contains(AiAction.summarize)
-                                ? 'Done!'
-                                : 'Summarize',
+                                ? 'editor.summarized'.tr()
+                                : 'editor.summarize'.tr(),
                         icon: state.loading.contains(AiAction.summarize)
                             ? null
                             : state.done.contains(AiAction.summarize)
@@ -313,10 +327,10 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                     Expanded(
                       child: _AIActionButton(
                         label: state.loading.contains(AiAction.tag)
-                            ? 'Tagging…'
+                            ? 'editor.tagging'.tr()
                             : state.done.contains(AiAction.tag)
-                                ? 'Tagged!'
-                                : 'Auto-tag',
+                                ? 'editor.tagged'.tr()
+                                : 'editor.autotag'.tr(),
                         icon: state.loading.contains(AiAction.tag)
                             ? null
                             : state.done.contains(AiAction.tag)
@@ -381,11 +395,66 @@ class _NoteEditorViewState extends ConsumerState<NoteEditorView> {
                           _PulsingDot(),
                           SizedBox(width: 8.w),
                           Text(
-                            'Recording… tap mic to stop',
+                            'editor.listening'.tr(),
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontFamily: FontsM.dmSans.name,
                               color: ColorM.recordingRed,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                if (state.recording && state.voiceLangMissing)
+                  Padding(
+                    padding: EdgeInsets.only(top: 8.h),
+                    child: Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 12.w,
+                        vertical: 10.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: ColorM.starYellow.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(8.r),
+                        border: Border.all(
+                          color: ColorM.starYellow.withValues(alpha: 0.25),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(
+                            LucideIcons.info,
+                            size: 14.sp,
+                            color: ColorM.starYellow,
+                          ),
+                          SizedBox(width: 8.w),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'voice.lang_missing'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 11.sp,
+                                    fontFamily: FontsM.dmSans.name,
+                                    color: ColorM.foreground,
+                                    height: 1.4,
+                                  ),
+                                ),
+                                SizedBox(height: 4.h),
+                                Text(
+                                  'voice.lang_missing_hint'.tr(),
+                                  style: TextStyle(
+                                    fontSize: 10.sp,
+                                    fontFamily: FontsM.dmSans.name,
+                                    color: ColorM.mutedForeground,
+                                    height: 1.4,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
@@ -551,14 +620,19 @@ class _TagPickerSheet extends ConsumerWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Tags',
+                  'editor.tags_title'.tr(),
                   style: context.titleMedium.copyWith(
                     fontWeight: FontWeightM.bold,
                     color: ColorM.foreground,
                   ),
                 ),
                 Text(
-                  '${selected.length}/${NoteEditorNotifier.maxTags}',
+                  'editor.tags_counter'.tr(
+                    namedArgs: {
+                      'count': '${selected.length}',
+                      'max': '${NoteEditorNotifier.maxTags}',
+                    },
+                  ),
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontFamily: FontsM.dmSans.name,
@@ -604,7 +678,7 @@ class _TagPickerSheet extends ConsumerWidget {
                           ),
                           SizedBox(width: 4.w),
                           Text(
-                            label,
+                            localizedTag(label),
                             style: TextStyle(
                               fontSize: 12.sp,
                               fontFamily: FontsM.dmSans.name,

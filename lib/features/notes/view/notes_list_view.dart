@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -65,7 +66,7 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Notebook AI',
+                        'home.eyebrow'.tr(),
                         style: TextStyle(
                           fontSize: 12.sp,
                           fontFamily: FontsM.dmSans.name,
@@ -75,7 +76,7 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                       ),
                       SizedBox(height: 2.h),
                       Text(
-                        'My Notes',
+                        'home.title'.tr(),
                         style: context.headlineSmall.copyWith(
                           fontWeight: FontWeightM.bold,
                           color: ColorM.foreground,
@@ -83,27 +84,39 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                       ),
                     ],
                   ),
-                  GestureDetector(
-                    onTap: () => nav.openNewNote(),
-                    child: Container(
-                      width: 40.w,
-                      height: 40.w,
-                      decoration: BoxDecoration(
-                        color: ColorM.primaryAccent,
-                        borderRadius: BorderRadius.circular(14.r),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const _LanguageToggle(),
+                      SizedBox(width: 8.w),
+                      GestureDetector(
+                        onTap: () => nav.openNewNote(),
+                        child: Container(
+                          width: 40.w,
+                          height: 40.w,
+                          decoration: BoxDecoration(
+                            color: ColorM.primaryAccent,
+                            borderRadius: BorderRadius.circular(14.r),
+                          ),
+                          child: Icon(
+                            LucideIcons.plus,
+                            color: ColorM.onPrimary,
+                            size: 22.sp,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        LucideIcons.plus,
-                        color: ColorM.onPrimary,
-                        size: 22.sp,
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ),
               SizedBox(height: 4.h),
               Text(
-                '${state.total} notes · ${state.starred.length} starred',
+                'home.stats'.tr(
+                  namedArgs: {
+                    'total': '${state.total}',
+                    'starred': '${state.starred.length}',
+                  },
+                ),
                 style: TextStyle(
                   fontSize: 12.sp,
                   fontFamily: FontsM.dmSans.name,
@@ -142,7 +155,7 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                         _SectionHeader(
                           icon: LucideIcons.star,
                           iconColor: ColorM.starYellow,
-                          label: 'STARRED',
+                          label: 'home.section_starred'.tr(),
                         ),
                         SizedBox(height: 12.h),
                         ...state.starred.map(
@@ -162,7 +175,7 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                       _SectionHeader(
                         icon: LucideIcons.clock,
                         iconColor: ColorM.mutedForeground,
-                        label: 'RECENT',
+                        label: 'home.section_recent'.tr(),
                       ),
                       SizedBox(height: 12.h),
                       ...state.recent.map(
@@ -182,6 +195,51 @@ class _NotesListViewState extends ConsumerState<NotesListView> {
                 ),
         ),
       ],
+    );
+  }
+}
+
+class _LanguageToggle extends StatelessWidget {
+  const _LanguageToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        final next = context.locale.languageCode == 'ar'
+            ? const Locale('en')
+            : const Locale('ar');
+        context.setLocale(next);
+      },
+      child: Container(
+        height: 40.w,
+        padding: EdgeInsets.symmetric(horizontal: 12.w),
+        decoration: BoxDecoration(
+          color: ColorM.cardBackground,
+          borderRadius: BorderRadius.circular(14.r),
+          border: Border.all(color: ColorM.border, width: 1),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              LucideIcons.languages,
+              size: 16.sp,
+              color: ColorM.foreground,
+            ),
+            SizedBox(width: 6.w),
+            Text(
+              'language.code'.tr(),
+              style: TextStyle(
+                fontSize: 12.sp,
+                fontFamily: FontsM.dmSans.name,
+                fontWeight: FontWeightM.semiBold,
+                color: ColorM.foreground,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -10,6 +10,10 @@
 		</array>
 
 
+		<key>NSMicrophoneUsageDescription</key>
+		<string>Notebook AI needs microphone access to record voice notes and transcribe them into text.</string>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>Notebook AI uses speech recognition to turn your spoken voice notes into text.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true />
 		<key>CFBundleDevelopmentRegion</key>

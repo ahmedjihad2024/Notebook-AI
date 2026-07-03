@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:notebook_ai/core/res/color_manager.dart';
 
 // ─── Time Ago ─────────────────────────────────────────────────────────────────
@@ -6,12 +6,12 @@ import 'package:notebook_ai/core/res/color_manager.dart';
 String timeAgo(DateTime date) {
   final diff = DateTime.now().difference(date);
   final days = diff.inDays;
-  if (days == 0) return 'Today';
-  if (days == 1) return 'Yesterday';
-  if (days < 7) return '$days days ago';
+  if (days == 0) return 'time.today'.tr();
+  if (days == 1) return 'time.yesterday'.tr();
+  if (days < 7) return plural('time.days_ago', days);
   // Same year → "15 Jun"; different year → "15 Jun 2025".
   final pattern = date.year == DateTime.now().year ? 'd MMM' : 'd MMM y';
-  return DateFormat(pattern).format(date);
+  return DateFormat(pattern, Intl.getCurrentLocale()).format(date);
 }
 
 // ─── Generate ID ──────────────────────────────────────────────────────────────
@@ -19,6 +19,17 @@ String timeAgo(DateTime date) {
 String generateId() {
   return DateTime.now().millisecondsSinceEpoch.toRadixString(36) +
       (DateTime.now().microsecond).toRadixString(36);
+}
+
+// ─── Tag / folder display label ───────────────────────────────────────────────
+
+/// Localized display label for a canonical tag/folder name. The stored value
+/// stays English (it doubles as the DB folder and the Gemini allowed-tag list);
+/// only the shown text is translated. Unknown labels fall back to themselves.
+String localizedTag(String label) {
+  final key = 'tags.$label';
+  final translated = key.tr();
+  return translated == key ? label : translated;
 }
 
 // ─── Folders ──────────────────────────────────────────────────────────────────

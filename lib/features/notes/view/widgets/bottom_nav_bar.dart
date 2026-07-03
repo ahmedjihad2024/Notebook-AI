@@ -1,3 +1,4 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -22,23 +23,24 @@ class NotesBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.locale;
     final items = <_NavItem>[
       _NavItem(
         icon: LucideIcons.fileText,
         activeIcon: LucideIcons.fileText,
-        label: 'Notes',
+        label: 'nav.notes'.tr(),
         target: NotesView.list,
       ),
       _NavItem(
         icon: LucideIcons.folderOpen,
         activeIcon: LucideIcons.folder,
-        label: 'Folders',
+        label: 'nav.folders'.tr(),
         target: NotesView.folders,
       ),
       _NavItem(
         icon: LucideIcons.search,
         activeIcon: LucideIcons.search,
-        label: 'Search',
+        label: 'nav.search'.tr(),
         target: NotesView.search,
       ),
     ];
